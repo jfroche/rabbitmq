@@ -1,4 +1,4 @@
-FROM rabbitmq:alpine
+FROM rabbitmq:3.7.4-alpine
 MAINTAINER Jo Vandeginste <jo.vandeginste@gmail.com>
 
 CMD ["/run.sh"]
