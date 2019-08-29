@@ -11,23 +11,19 @@ MGMTPORT=${RABBITMQ_MGMT_PORT:-15672}
 STOMPPORT=${RABBITMQ_STOMP_PORT:-61613}
 ERLANG_COOKIE=${RABBITMQ_ERLANG_COOKIE:-ERLANGCOOKIE}
 
-_word=$([ ${RABBITMQ_PASS} ] && echo "preset" || echo "random")
+_word=$([ "${RABBITMQ_PASS}" ] && echo "preset" || echo "random")
 echo "=> Securing RabbitMQ with a ${_word} password"
-cat >/etc/rabbitmq/rabbitmq.config <<EOF
-[
-   {rabbit, [{default_user, <<"$USER">>},{default_pass, <<"$PASS">>},{tcp_listeners, [{"::", 5672}]}]},
-   {rabbitmq_stomp, [{tcp_listeners, [{"::", $STOMPPORT}]},
-		     {implicit_connect, true}
-		    ]},
-   {rabbitmq_management,
-      [{listener, [{port,$MGMTPORT},
-		 {ip, "::"}
-			]}
-    ]}
-].
+cat >/etc/rabbitmq/rabbitmq.conf <<EOF
+default_user = $USER
+default_pass = $PASS
+listeners.tcp.default = :::5672
+stomp.listeners.tcp.1 = :::$STOMPPORT
+stomp.implicit_connect = true
+management.listener.port = $MGMTPORT
+management.listener.ip = ::
 EOF
 echo "=> Setting erlang cookie"
-echo $ERLANG_COOKIE >/var/lib/rabbitmq/.erlang.cookie
+echo "$ERLANG_COOKIE" >/var/lib/rabbitmq/.erlang.cookie
 echo "=> configuring plugins"
 cat >/etc/rabbitmq/enabled_plugins <<EOF
 [rabbitmq_management,rabbitmq_stomp].
@@ -41,7 +37,7 @@ echo "========================================================================"
 echo "You can now connect to this RabbitMQ server using, for example:"
 echo ""
 
-if [ ${_word} == "random" ]; then
+if [ "${_word}" == "random" ]; then
 	echo "    curl --user $USER:$PASS http://<host>:<port>/api/vhosts"
 	echo ""
 	echo "Please remember to change the above password as soon as possible!"
